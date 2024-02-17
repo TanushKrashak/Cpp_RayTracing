@@ -1,10 +1,10 @@
 -- premake5.lua
-workspace "WalnutApp"
+workspace "RT_Cpp"
    architecture "x64"
    configurations { "Debug", "Release", "Dist" }
-   startproject "WalnutApp"
+   startproject "RT_Cpp"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 include "Walnut/WalnutExternal.lua"
 
-include "WalnutApp"
+include "RT_Cpp"

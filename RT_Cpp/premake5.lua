@@ -1,4 +1,4 @@
-project "WalnutApp"
+project "RT_Cpp"
    kind "ConsoleApp"
    language "C++"
    cppdialect "C++17"
