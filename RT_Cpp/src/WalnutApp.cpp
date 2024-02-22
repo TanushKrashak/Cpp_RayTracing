@@ -3,8 +3,8 @@
 
 #include "Walnut/Image.h"
 #include "Walnut/Timer.h"
-#include "src/Renderer.h"
-#include "src/Camera.h"
+#include "Renderer.h"
+#include "Camera.h"
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
@@ -14,7 +14,7 @@ class ExampleLayer : public Walnut::Layer
 {
 public:
 	ExampleLayer()
-		: m_Camera(45.0f, 0.1f, 100.0f) {
+		: m_Camera(45.0f, 0.1f, 100.0f) {		
 		// Initialize Materials
 		Material &pinkSphere = m_Scene.Materials.emplace_back();
 		pinkSphere.Albedo = glm::vec3(1.0f, 0.0f, 1.0f);
@@ -23,6 +23,12 @@ public:
 		Material &blueSphere = m_Scene.Materials.emplace_back();
 		blueSphere.Albedo = glm::vec3(0.2f, 0.3f, 1.0f);
 		blueSphere.Roughness = 0.1f;
+
+		Material& yellowSphere = m_Scene.Materials.emplace_back();
+		yellowSphere.Albedo = glm::vec3(0.8f, 0.6f, 0.2f);
+		yellowSphere.Roughness = 0.1f;
+		yellowSphere.EmissionColor = yellowSphere.Albedo;
+		yellowSphere.EmissionPower = 10.0f;
 
 		// Initialize Sphere Details
 		{
@@ -34,9 +40,16 @@ public:
 		}
 		{
 			Sphere sphere;
-			sphere.Position = glm::vec3(0,-101, -5);
+			sphere.Position = glm::vec3(0 ,-101, 5);
 			sphere.Radius = 100.0f;
 			sphere.MaterialIndex = 1;
+			m_Scene.Spheres.push_back(sphere);
+		}
+		{
+			Sphere sphere;
+			sphere.Position = glm::vec3(32, 4, -51);
+			sphere.Radius = 32.0f;
+			sphere.MaterialIndex = 2;
 			m_Scene.Spheres.push_back(sphere);
 		}
 	}
@@ -49,6 +62,7 @@ public:
 	virtual void OnUIRender() override {
 		ImGui::Begin("Settings");
 		ImGui::Text("Last Render: %.3fms", m_LastRenderTime);
+		ImGui::Text("Camera Rotation: %.3fdeg %.3fdeg %.3fdeg", m_CameraRotation.r, m_CameraRotation.g, m_CameraRotation.b);
 
 		if (ImGui::Button("Render")) {
 			Render();
@@ -75,9 +89,10 @@ public:
 			Material& material = m_Scene.Materials[i];
 
 			ImGui::ColorEdit3("Sphere Color (Albedo)", glm::value_ptr(material.Albedo));
-			ImGui::DragFloat("Sphere Rougness", &material.Roughness, 0.05f, 0.0f, 1.0f);
-			ImGui::DragFloat("Sphere Metallic", &material.Metallic, 0.05f, 0.0f, 1.0f);
-
+			ImGui::DragFloat("Roughness", &material.Roughness, 0.05f, 0.0f, 1.0f);
+			ImGui::DragFloat("Metallic", &material.Metallic, 0.05f, 0.0f, 1.0f);
+			ImGui::ColorEdit3("Emissive Color", glm::value_ptr(material.EmissionColor));
+			ImGui::DragFloat("Emissive Power", &material.EmissionPower, 0.05f, 0.0f, FLT_MAX);
 			ImGui::NewLine();
 			ImGui::Separator();
 			ImGui::PopID();
@@ -107,6 +122,7 @@ public:
 		m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight); // Camera Resize
 		m_Renderer.Render(m_Scene, m_Camera); // Renderer Render
 		m_LastRenderTime = timer.Elapsed(); // Set Elapsed Time
+		m_CameraRotation = m_Camera.GetDirection();
 	}
 
 private:	
@@ -115,6 +131,7 @@ private:
 	Scene m_Scene;
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;	
 	float m_LastRenderTime = 0.0f;	
+	glm::vec3 m_CameraRotation = glm::vec3(0.0f);
 };
 
 Walnut::Application* Walnut::CreateApplication(int argc, char** argv) {
